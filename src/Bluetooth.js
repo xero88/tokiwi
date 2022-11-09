@@ -8,6 +8,12 @@ const HUMIDITY = 'ef680203-9b35-4933-9b10-52ffa9740042'
 const LED = 'ef680301-9b35-4933-9b10-52ffa9740042'
 const BUTTON = 'ef680302-9b35-4933-9b10-52ffa9740042'
 
+export const LedColor = {
+	RED: new Uint8Array([1, 255, 0, 0]),
+	GREEN: new Uint8Array([1, 124, 252, 0]),
+	BLUE: new Uint8Array([1, 30, 144, 255]),
+}
+
 export class Bluetooth {
 	async connect() {
 		let serviceUuid = 'ef680200-9b35-4933-9b10-52ffa9740042'
@@ -62,13 +68,13 @@ export class Bluetooth {
 			await myCharacteristic.startNotifications()
 
 			console.log('> Notifications started')
-			myCharacteristic.addEventListener('characteristicvaluechanged', callback)
+			myCharacteristic.addEventListener('characteristicvaluechanged', (event) => callback(parseHumidity(event)))
 		} catch (error) {
 			console.console.log('Argh! ' + error)
 		}
 	}
 
-	async displayLed() {
+	async displayLed(color) {
 		console.log('Getting Heart Rate Service...')
 		const service = await this.server.getPrimaryService(parseUID('ef680300-9b35-4933-9b10-52ffa9740042'))
 
@@ -79,14 +85,14 @@ export class Bluetooth {
 		// Writing 1 is the signal to reset energy expended.
 		//let resetEnergyExpended = Uint8Array.of(1)
 
-		var red = new Uint8Array([1, 255, 0, 0])
-		var green = new Uint8Array([1, 124, 252, 0])
-		var blue = new Uint8Array([1, 30, 144, 255])
+		//var red = new Uint8Array([1, 255, 0, 0])
+		//var green = new Uint8Array([1, 124, 252, 0])
+		//var blue = new Uint8Array([1, 30, 144, 255])
 
 		// 124,252,0
 		// rgb(30,144,255)
 
-		await characteristic.writeValue(green)
+		await characteristic.writeValue(color)
 	}
 
 	async listenButton(callback) {
@@ -102,7 +108,7 @@ export class Bluetooth {
 			await myCharacteristic.startNotifications()
 
 			console.log('> Notifications started')
-			myCharacteristic.addEventListener('characteristicvaluechanged', callback)
+			myCharacteristic.addEventListener('characteristicvaluechanged', (event) => callback(parseButtonPressed(event)))
 		} catch (error) {
 			console.console.log('Argh! ' + error)
 		}
@@ -121,11 +127,34 @@ const parseUID = (uid) => {
 const parseTemperature = (event) => {
 	let value = event.target.value
 	let a = []
+	for (let i = 0; i < value.byteLength; i++) {
+		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
+	}
+	return `${value.getUint8(0)}.${value.getUint8(1)}`
+}
+
+const parseHumidity = (event) => {
+	let value = event.target.value
+	let a = []
 	// Convert raw data bytes to hex values just for the sake of showing something.
 	// In the "real" world, you'd use data.getUint8, data.getUint16 or even
 	// TextDecoder to process raw data bytes.
 	for (let i = 0; i < value.byteLength; i++) {
 		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
 	}
-	return `${value.getUint8(0)}.${value.getUint8(1)}`
+
+	return `${value.getUint8(value).toString(16).slice(-2)}`
+}
+
+const parseButtonPressed = (event) => {
+	let value = event.target.value
+	let a = []
+
+	for (let i = 0; i < value.byteLength; i++) {
+		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
+	}
+
+	if (a.join(' ') === '0x01') return true
+
+	return false
 }

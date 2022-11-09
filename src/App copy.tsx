@@ -4,7 +4,7 @@ import { Bluetooth } from './Bluetooth'
 
 const bt = new Bluetooth()
 
-function App() {
+function App2() {
 	const [temperature, setTemperature] = React.useState<string>('')
 	const [humidity, setHumidity] = React.useState<string>('')
 	const [buttonPressed, setButtonPressed] = React.useState<boolean>(false)
@@ -77,4 +77,4 @@ function App() {
 	)
 }
 
-export default App
+export default App2
