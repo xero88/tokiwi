@@ -8,16 +8,6 @@ const HUMIDITY = 'ef680203-9b35-4933-9b10-52ffa9740042'
 const LED = 'ef680301-9b35-4933-9b10-52ffa9740042'
 const BUTTON = 'ef680302-9b35-4933-9b10-52ffa9740042'
 
-// service led
-// ef680300-9b35-4933-9b10-52ffa9740042
-
-// char led => ef680301-9b35-4933-9b10-52ffa9740042
-
-// 201
-// 0203
-
-// 0301 => led
-
 export class Bluetooth {
 	async connect() {
 		let serviceUuid = 'ef680200-9b35-4933-9b10-52ffa9740042'
@@ -46,8 +36,6 @@ export class Bluetooth {
 
 	async listenTemperature(callback) {
 		try {
-			// TODO: CEHCK SERVER
-
 			console.log('Getting Service...')
 			const service = await this.server.getPrimaryService(parseUID(ENV_SERVICE))
 
@@ -57,7 +45,7 @@ export class Bluetooth {
 			await myCharacteristic.startNotifications()
 
 			console.log('> Notifications started')
-			myCharacteristic.addEventListener('characteristicvaluechanged', callback)
+			myCharacteristic.addEventListener('characteristicvaluechanged', (event) => callback(parseTemperature(event)))
 		} catch (error) {
 			console.console.log('Argh! ' + error)
 		}
@@ -65,8 +53,6 @@ export class Bluetooth {
 
 	async listenHumidity(callback) {
 		try {
-			// TODO: CEHCK SERVER
-
 			console.log('Getting Service...')
 			const service = await this.server.getPrimaryService(parseUID(ENV_SERVICE))
 
@@ -130,4 +116,16 @@ const parseUID = (uid) => {
 	}
 
 	return characteristicUuid
+}
+
+const parseTemperature = (event) => {
+	let value = event.target.value
+	let a = []
+	// Convert raw data bytes to hex values just for the sake of showing something.
+	// In the "real" world, you'd use data.getUint8, data.getUint16 or even
+	// TextDecoder to process raw data bytes.
+	for (let i = 0; i < value.byteLength; i++) {
+		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
+	}
+	return `${value.getUint8(0)}.${value.getUint8(1)}`
 }
