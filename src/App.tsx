@@ -1,10 +1,21 @@
 import React from 'react'
+import { AxisOptions, Chart } from 'react-charts'
 import styled, { css, keyframes } from 'styled-components'
 import './App.css'
 import { Bluetooth, LedColor } from './Bluetooth'
-import { Chart2 } from './Chart'
+import { FaTemperatureHigh, FaCloud } from 'react-icons/fa'
 
 const bt = new Bluetooth()
+
+type DailyStars = {
+	date: Date
+	value: number
+}
+
+type Series = {
+	label: string
+	data: DailyStars[]
+}
 
 function App() {
 	const [connected, setConnected] = React.useState<boolean>(false)
@@ -12,12 +23,29 @@ function App() {
 	const [humidity, setHumidity] = React.useState<string>('')
 	const [buttonPressed, setButtonPressed] = React.useState<boolean>(false)
 
+	const [temperatureList, setTemperatureList] = React.useState<DailyStars[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
+	const [humidityList, setHumidityList] = React.useState<DailyStars[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
+
+	const data: Series[] = [
+		{
+			label: 'Températures',
+			data: temperatureList,
+		},
+		{
+			label: 'Humidité',
+			data: humidityList,
+		},
+	]
+
 	const callbackTemperature = (value: string) => {
+		console.log(data)
 		setTemperature(value)
+		setTemperatureList((temperatureList) => [...temperatureList, { date: new Date(), value: parseInt(value) }])
 	}
 
 	const callbackHumidity = (value: string) => {
 		setHumidity(value)
+		setHumidityList((humidityList) => [...humidityList, { date: new Date(), value: parseInt(value) }])
 	}
 
 	const callbackButton = (value: any) => {
@@ -35,6 +63,22 @@ function App() {
 	const handleClickGreenLed = () => bt.displayLed(LedColor.GREEN)
 	const handleClickRedLed = () => bt.displayLed(LedColor.RED)
 	const handleClickBlueLed = () => bt.displayLed(LedColor.BLUE)
+
+	const primaryAxis = React.useMemo(
+		(): AxisOptions<DailyStars> => ({
+			getValue: (datum) => datum.date,
+		}),
+		[]
+	)
+
+	const secondaryAxes = React.useMemo(
+		(): AxisOptions<DailyStars>[] => [
+			{
+				getValue: (datum) => datum.value,
+			},
+		],
+		[]
+	)
 
 	if (!connected) {
 		return (
@@ -57,18 +101,34 @@ function App() {
 			<Content>
 				<Row>
 					<Card color="#D92E2F">
-						<h2>{temperature}</h2>
+						<Title>
+							<FaTemperatureHigh />
+							<br />
+							{temperature}
+						</Title>
 					</Card>
 					<Card color="#58ABFF">
-						<h2>{humidity}</h2>
+						<Title>
+							<FaCloud />
+							<br />
+							{humidity} %
+						</Title>
 					</Card>
 				</Row>
 				<Row full>
-					<Card color="#FFC1C0">test</Card>
+					<Card color="#FFC1C0">
+						<Chart
+							options={{
+								data,
+								primaryAxis,
+								secondaryAxes,
+							}}
+						/>
+					</Card>
 				</Row>
 				<Row>
 					<Card color="#FFD3A0">
-						<h2>Led</h2>
+						<Title>Led</Title>
 						<DotContainer>
 							<Dot color="green" onClick={handleClickGreenLed} />
 							<Dot color="red" onClick={handleClickRedLed} />
@@ -108,6 +168,20 @@ const Dot = styled('div')<{ color: string }>`
 	height: 50px;
 	border-radius: 50%;
 	background: ${(props) => props.color};
+
+	@media (max-width: 580px) {
+		width: 20px;
+		height: 20px;
+	}
+`
+
+const Title = styled.span`
+	font-size: 2rem;
+	text-align: center;
+
+	@media (max-width: 580px) {
+		font-size: 1rem;
+	}
 `
 
 const BlackSquareButton = styled('button')<{ shake?: boolean }>`
@@ -124,11 +198,21 @@ const BlackSquareButton = styled('button')<{ shake?: boolean }>`
 			animation-duration: 0.82s;
 			animation-iteration-count: infinite;
 		`};
+
+	@media (max-width: 580px) {
+		width: 50px;
+		height: 50px;
+	}
 `
 
 const DotContainer = styled('div')`
 	display: flex;
 	justify-content: space-around;
+	gap: 20px;
+
+	@media (max-width: 580px) {
+		gap: 5px;
+	}
 `
 
 const Page = styled.div`
@@ -178,6 +262,10 @@ export const Card = styled('div')<{ color: string }>`
 	color: palevioletred;
 	margin: 0.5em 1em;
 	padding: 0.25em 1em;
+
+	@media (max-width: 580px) {
+		height: 100px;
+	}
 
 	${(props) =>
 		props.color &&
