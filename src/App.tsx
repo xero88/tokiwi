@@ -7,14 +7,14 @@ import { FaTemperatureHigh, FaCloud } from 'react-icons/fa'
 
 const bt = new Bluetooth()
 
-type DailyStars = {
+type EnvValue = {
 	date: Date
 	value: number
 }
 
 type Series = {
 	label: string
-	data: DailyStars[]
+	data: EnvValue[]
 }
 
 function App() {
@@ -23,8 +23,8 @@ function App() {
 	const [humidity, setHumidity] = React.useState<string>('')
 	const [buttonPressed, setButtonPressed] = React.useState<boolean>(false)
 
-	const [temperatureList, setTemperatureList] = React.useState<DailyStars[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
-	const [humidityList, setHumidityList] = React.useState<DailyStars[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
+	const [temperatureList, setTemperatureList] = React.useState<EnvValue[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
+	const [humidityList, setHumidityList] = React.useState<EnvValue[]>([{ date: new Date(), value: 25 }]) // bizarre bug lib
 
 	const data: Series[] = [
 		{
@@ -65,14 +65,14 @@ function App() {
 	const handleClickBlueLed = () => bt.displayLed(LedColor.BLUE)
 
 	const primaryAxis = React.useMemo(
-		(): AxisOptions<DailyStars> => ({
+		(): AxisOptions<EnvValue> => ({
 			getValue: (datum) => datum.date,
 		}),
 		[]
 	)
 
 	const secondaryAxes = React.useMemo(
-		(): AxisOptions<DailyStars>[] => [
+		(): AxisOptions<EnvValue>[] => [
 			{
 				getValue: (datum) => datum.value,
 			},
@@ -90,7 +90,9 @@ function App() {
 						</Button>
 					</ButtonContainer>
 				</Header>
-				<Content>Connectez le device d'abord.</Content>
+				<Content>
+					<h1>Veuillez vous connecter</h1>
+				</Content>
 			</Page>
 		)
 	}
@@ -108,7 +110,7 @@ function App() {
 						</Title>
 					</Card>
 					<Card color="#58ABFF">
-						<Title>
+						<Title color="black">
 							<FaCloud />
 							<br />
 							{humidity} %
@@ -128,7 +130,7 @@ function App() {
 				</Row>
 				<Row>
 					<Card color="#FFD3A0">
-						<Title>Led</Title>
+						<Title color="black">Led</Title>
 						<DotContainer>
 							<Dot color="green" onClick={handleClickGreenLed} />
 							<Dot color="red" onClick={handleClickRedLed} />
@@ -136,6 +138,7 @@ function App() {
 						</DotContainer>
 					</Card>
 					<Card color="#6CDEB2">
+						<Title color="black">Bouton</Title>
 						<BlackSquareButton shake={buttonPressed} />
 					</Card>
 				</Row>
@@ -175,9 +178,11 @@ const Dot = styled('div')<{ color: string }>`
 	}
 `
 
-const Title = styled.span`
+const Title = styled('span')<{ color?: string }>`
 	font-size: 2rem;
 	text-align: center;
+
+	color: ${(props) => props.color};
 
 	@media (max-width: 580px) {
 		font-size: 1rem;
@@ -258,6 +263,7 @@ export const Card = styled('div')<{ color: string }>`
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	gap: 16px;
 
 	color: palevioletred;
 	margin: 0.5em 1em;

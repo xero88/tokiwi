@@ -22,7 +22,7 @@ export class Bluetooth {
 				filters: [{ services: SERVICE_LIST }],
 			})
 
-			console.log('Connecting to GATT Server...')
+			console.log('Connecting to Server...')
 			this.server = await device.gatt.connect()
 			console.log('connected.')
 		} catch (error) {
