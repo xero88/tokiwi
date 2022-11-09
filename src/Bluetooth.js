@@ -81,24 +81,12 @@ const parseUID = (uid) => {
 
 const parseTemperature = (event) => {
 	let value = event.target.value
-	let a = []
-	for (let i = 0; i < value.byteLength; i++) {
-		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
-	}
 	return `${value.getUint8(0)}.${value.getUint8(1)}`
 }
 
 const parseHumidity = (event) => {
 	let value = event.target.value
-	let a = []
-	// Convert raw data bytes to hex values just for the sake of showing something.
-	// In the "real" world, you'd use data.getUint8, data.getUint16 or even
-	// TextDecoder to process raw data bytes.
-	for (let i = 0; i < value.byteLength; i++) {
-		a.push('0x' + ('00' + value.getUint8(i).toString(16)).slice(-2))
-	}
-
-	return `${value.getUint8(value).toString(16).slice(-2)}`
+	return `${value.getUint8(0)}`
 }
 
 const parseButtonPressed = (event) => {
